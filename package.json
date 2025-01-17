@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "preview": "vite preview"
   },
+  "homepage": "https://nevzattalhaozcan.github.io/blog-app",
   "dependencies": {
     "@types/lodash": "^4.17.14",
     "bootstrap": "^5.3.3",
@@ -23,6 +26,7 @@
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-react": "^3.1.0",
+    "gh-pages": "^6.3.0",
     "typescript": "^4.9.3",
     "vite": "^4.1.0"
   }
