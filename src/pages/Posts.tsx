@@ -170,6 +170,25 @@ const Posts: React.FC = () => {
     }));
   };
 
+  const renderPaginationItems = () => {
+    if (totalPages <= 0) return null;
+    
+    const items = [];
+    for (let i = 1; i <= totalPages; i++) {
+      items.push(
+        <li key={i} className={`page-item ${filters.page === i ? 'active' : ''}`}>
+          <button
+            className="page-link"
+            onClick={() => handlePageChange(i)}
+          >
+            {i}
+          </button>
+        </li>
+      );
+    }
+    return items;
+  };
+
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -354,7 +373,7 @@ const Posts: React.FC = () => {
         })
       )}
 
-      {!isLoading && posts.length > 0 && (
+      {!isLoading && posts.length > 0 && totalPages > 0 && (
         <nav aria-label="Page navigation" className="my-4">
           <ul className="pagination justify-content-center">
             <li className={`page-item ${filters.page <= 1 ? 'disabled' : ''}`}>
@@ -366,16 +385,7 @@ const Posts: React.FC = () => {
                 Previous
               </button>
             </li>
-            {[...Array(totalPages)].map((_, index) => (
-              <li key={index} className={`page-item ${filters.page === index + 1 ? 'active' : ''}`}>
-                <button
-                  className="page-link"
-                  onClick={() => handlePageChange(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              </li>
-            ))}
+            {renderPaginationItems()}
             <li className={`page-item ${filters.page >= totalPages ? 'disabled' : ''}`}>
               <button
                 className="page-link"
