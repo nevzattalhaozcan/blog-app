@@ -14,12 +14,12 @@ import PostDetail from './components/PostDetail'
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/blog-app",
     element: <App />,
     errorElement: <Error />,
     children: [
       {
-        path: "/",
+        path: "/blog-app",
         element: <Home />
       },
       {
