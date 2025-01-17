@@ -17,6 +17,9 @@ interface Post {
 
 interface PostResponse {
   posts: Post[],
+  totalPages: number,
+  currentPage: number,
+  total: number,
 }
 
 const Home: React.FC = () => {
@@ -26,6 +29,9 @@ const Home: React.FC = () => {
   const { token } = useAuth();
   const [showPostModal, setShowPostModal] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
 
   const handlePostCreated = () => {
     fetchPosts();
@@ -34,12 +40,13 @@ const Home: React.FC = () => {
   const fetchPosts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}/posts`);
+      const response = await fetch(`${BASE_URL}/posts?page=${currentPage}&limit=${limit}&featured=true`);
       if (!response.ok) {
         throw new Error('Failed to fetch posts');
       }
       const data = (await response.json()) as PostResponse;
-      setPosts(data.posts.filter(post => post.featured));
+      setPosts(data.posts);
+      setTotalPages(data.totalPages);
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -71,7 +78,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [currentPage]); // Add currentPage as dependency
 
   const toggleReadMore = (postId: number) => {
     setExpandedPosts(prev => {
@@ -83,6 +90,74 @@ const Home: React.FC = () => {
       }
       return newSet;
     });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const renderPaginationItems = () => {
+    if (totalPages <= 0) return null;
+
+    const items = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Add first page and ellipsis
+    if (startPage > 1) {
+      items.push(
+        <li key={1} className="page-item">
+          <button className="page-link" onClick={() => handlePageChange(1)}>1</button>
+        </li>
+      );
+      if (startPage > 2) {
+        items.push(
+          <li key="ellipsis1" className="page-item disabled">
+            <span className="page-link">...</span>
+          </li>
+        );
+      }
+    }
+
+    // Add page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+          <button 
+            className="page-link" 
+            onClick={() => handlePageChange(i)}
+            aria-current={currentPage === i ? 'page' : undefined}
+          >
+            {i}
+          </button>
+        </li>
+      );
+    }
+
+    // Add last page and ellipsis
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        items.push(
+          <li key="ellipsis2" className="page-item disabled">
+            <span className="page-link">...</span>
+          </li>
+        );
+      }
+      items.push(
+        <li key={totalPages} className="page-item">
+          <button className="page-link" onClick={() => handlePageChange(totalPages)}>
+            {totalPages}
+          </button>
+        </li>
+      );
+    }
+
+    return items;
   };
 
   return (
@@ -142,6 +217,37 @@ const Home: React.FC = () => {
             </div>
           )
         })
+      )}
+
+      {!isLoading && posts.length > 0 && totalPages > 1 && (
+        <nav aria-label="Page navigation" className="my-4">
+          <ul className="pagination justify-content-center">
+            <li className={`page-item ${currentPage <= 1 ? 'disabled' : ''}`}>
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+              >
+                <i className="bi bi-chevron-left me-1"></i>
+                Previous
+              </button>
+            </li>
+            {renderPaginationItems()}
+            <li className={`page-item ${currentPage >= totalPages ? 'disabled' : ''}`}>
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+              >
+                Next
+                <i className="bi bi-chevron-right ms-1"></i>
+              </button>
+            </li>
+          </ul>
+          <div className="text-center mt-2 text-muted">
+            Page {currentPage} of {totalPages}
+          </div>
+        </nav>
       )}
     </div>
   )

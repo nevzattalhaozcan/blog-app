@@ -56,6 +56,9 @@ interface Post {
 
 interface PostResponse {
   posts: Post[];
+  totalPages: number;
+  currentPage: number;
+  total: number;
 }
 
 const Profile: React.FC = () => {
@@ -85,6 +88,9 @@ const Profile: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,17 +126,23 @@ const Profile: React.FC = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/posts`);
+      const response = await fetch(`${BASE_URL}/posts?page=${currentPage}&limit=${limit}&user_id=${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch posts');
       }
       const data = (await response.json()) as PostResponse;
-      const userPosts = data.posts.filter((post) => post.user_id === userId);
-      setPosts(userPosts);
+      setPosts(data.posts);
+      setTotalPages(data.totalPages);
     } catch (error: any) {
       setError(error.message);
     }
   };
+
+  useEffect(() => {
+    if (userId && token) {
+      fetchPosts();
+    }
+  }, [userId, token, currentPage]); // Add currentPage as dependency
 
   const toggleReadMore = (postId: number) => {
     setExpandedPosts((prev) => {
@@ -321,6 +333,24 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+    for (let i = 1; i <= totalPages; i++) {
+      items.push(
+        <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+          <button className="page-link" onClick={() => handlePageChange(i)}>
+            {i}
+          </button>
+        </li>
+      );
+    }
+    return items;
+  };
+
   if (isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
@@ -487,6 +517,37 @@ const Profile: React.FC = () => {
           </div>
         );
       })}
+
+      {!isLoading && posts.length > 0 && totalPages > 1 && (
+        <nav aria-label="Page navigation" className="my-4">
+          <ul className="pagination justify-content-center">
+            <li className={`page-item ${currentPage <= 1 ? 'disabled' : ''}`}>
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+              >
+                <i className="bi bi-chevron-left me-1"></i>
+                Previous
+              </button>
+            </li>
+            {renderPaginationItems()}
+            <li className={`page-item ${currentPage >= totalPages ? 'disabled' : ''}`}>
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+              >
+                Next
+                <i className="bi bi-chevron-right ms-1"></i>
+              </button>
+            </li>
+          </ul>
+          <div className="text-center mt-2 text-muted">
+            Page {currentPage} of {totalPages}
+          </div>
+        </nav>
+      )}
 
       <PostModal
         show={showPostModal}

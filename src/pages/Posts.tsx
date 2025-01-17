@@ -18,6 +18,7 @@ interface Post {
 interface PostResponse {
   posts: Post[];
   total: number;
+  totalPages: number;
 }
 
 interface FilterParams {
@@ -95,7 +96,7 @@ const Posts: React.FC = () => {
       }
       const data = (await response.json()) as PostResponse;
       setPosts(data.posts);
-      setTotalPages(Math.ceil(data.total / filters.limit));
+      setTotalPages(data.totalPages); // Use totalPages from API response
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -179,15 +180,65 @@ const Posts: React.FC = () => {
     if (totalPages <= 0) return null;
 
     const items = [];
-    for (let i = 1; i <= totalPages; i++) {
+    // Show max 5 pages at a time
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, filters.page - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust startPage if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Add first page and ellipsis if needed
+    if (startPage > 1) {
+      items.push(
+        <li key={1} className="page-item">
+          <button className="page-link" onClick={() => handlePageChange(1)}>1</button>
+        </li>
+      );
+      if (startPage > 2) {
+        items.push(
+          <li key="ellipsis1" className="page-item disabled">
+            <span className="page-link">...</span>
+          </li>
+        );
+      }
+    }
+
+    // Add visible page numbers
+    for (let i = startPage; i <= endPage; i++) {
       items.push(
         <li key={i} className={`page-item ${filters.page === i ? 'active' : ''}`}>
-          <button className="page-link" onClick={() => handlePageChange(i)}>
+          <button 
+            className="page-link" 
+            onClick={() => handlePageChange(i)}
+            aria-current={filters.page === i ? 'page' : undefined}
+          >
             {i}
           </button>
         </li>
       );
     }
+
+    // Add last page and ellipsis if needed
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        items.push(
+          <li key="ellipsis2" className="page-item disabled">
+            <span className="page-link">...</span>
+          </li>
+        );
+      }
+      items.push(
+        <li key={totalPages} className="page-item">
+          <button className="page-link" onClick={() => handlePageChange(totalPages)}>
+            {totalPages}
+          </button>
+        </li>
+      );
+    }
+
     return items;
   };
 
@@ -377,7 +428,7 @@ const Posts: React.FC = () => {
         })
       )}
 
-      {!isLoading && posts.length > 0 && totalPages > 0 && (
+      {!isLoading && totalPages > 1 && (
         <nav aria-label="Page navigation" className="my-4">
           <ul className="pagination justify-content-center">
             <li className={`page-item ${filters.page <= 1 ? 'disabled' : ''}`}>
@@ -386,6 +437,7 @@ const Posts: React.FC = () => {
                 onClick={() => handlePageChange(filters.page - 1)}
                 disabled={filters.page <= 1}
               >
+                <i className="bi bi-chevron-left me-1"></i>
                 Previous
               </button>
             </li>
@@ -397,9 +449,13 @@ const Posts: React.FC = () => {
                 disabled={filters.page >= totalPages}
               >
                 Next
+                <i className="bi bi-chevron-right ms-1"></i>
               </button>
             </li>
           </ul>
+          <div className="text-center mt-2 text-muted">
+            Page {filters.page} of {totalPages}
+          </div>
         </nav>
       )}
 
