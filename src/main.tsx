@@ -14,7 +14,7 @@ import PostDetail from './components/PostDetail'
 
 const router = createBrowserRouter([
   {
-    path: "/blog-app",
+    path: "/",
     element: <App />,
     errorElement: <Error />,
     children: [
