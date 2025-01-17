@@ -17,17 +17,18 @@ interface Post {
 
 interface PostResponse {
   posts: Post[],
+  total: number,
 }
 
 interface FilterParams {
-  sort?: string;
-  category?: string;
-  featured?: boolean;
-  search?: string;
-  startDate?: string;
-  endDate?: string;
-  page?: number;
-  limit?: number;
+  sort: string;
+  category: string;
+  featured: boolean;
+  search: string;
+  startDate: string;
+  endDate: string;
+  page: number;
+  limit: number;
 }
 
 const Posts: React.FC = () => {
@@ -38,6 +39,7 @@ const Posts: React.FC = () => {
   const [filters, setFilters] = useState<FilterParams>({
     sort: 'newest',
     category: '',
+    featured: false,
     search: '',
     startDate: '',
     endDate: '',
@@ -67,6 +69,7 @@ const Posts: React.FC = () => {
   const { token } = useAuth();
   const [showPostModal, setShowPostModal] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
   const handlePostCreated = () => {
     fetchPosts();
@@ -77,6 +80,10 @@ const Posts: React.FC = () => {
     try {
       const queryParams = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
+        // Skip adding featured to query params if it's false (default state)
+        if (key === 'featured' && !value) {
+          return;
+        }
         if (value !== '' && value !== undefined) {
           queryParams.append(key, value.toString());
         }
@@ -88,6 +95,7 @@ const Posts: React.FC = () => {
       }
       const data = (await response.json()) as PostResponse;
       setPosts(data.posts);
+      setTotalPages(Math.ceil(data.total / filters.limit));
     } catch (error: any) {
       setError(error.message);
     } finally {
@@ -111,10 +119,12 @@ const Posts: React.FC = () => {
     });
   };
 
-  const handleFilterChange = (name: string, value: string | boolean) => {
+  const handleFilterChange = (name: keyof FilterParams, value: string | boolean | number) => {
     setFilters(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
+      // Reset to page 1 when any filter changes except page
+      page: name === 'page' ? prev.page : 1
     }));
   };
 
@@ -122,6 +132,7 @@ const Posts: React.FC = () => {
     setFilters({
       sort: 'newest',
       category: '',
+      featured: false,
       search: '',
       startDate: '',
       endDate: '',
@@ -150,6 +161,13 @@ const Posts: React.FC = () => {
     } catch (error: any) {
       setError(error.message);
     }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setFilters(prev => ({
+      ...prev,
+      page: newPage
+    }));
   };
 
   return (
@@ -334,6 +352,45 @@ const Posts: React.FC = () => {
             </div>
           )
         })
+      )}
+
+      {!isLoading && posts.length > 0 && (
+        <nav aria-label="Page navigation" className="my-4">
+          <ul className="pagination justify-content-center">
+            <li className={`page-item ${filters.page <= 1 ? 'disabled' : ''}`}>
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(filters.page - 1)}
+                disabled={filters.page <= 1}
+              >
+                Previous
+              </button>
+            </li>
+            {[...Array(totalPages)].map((_, index) => (
+              <li key={index} className={`page-item ${filters.page === index + 1 ? 'active' : ''}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+            <li className={`page-item ${filters.page >= totalPages ? 'disabled' : ''}`}>
+              <button
+                className="page-link"
+                onClick={() => handlePageChange(filters.page + 1)}
+                disabled={filters.page >= totalPages}
+              >
+                Next
+              </button>
+            </li>
+          </ul>
+        </nav>
+      )}
+
+      {!isLoading && posts.length === 0 && (
+        <div className="alert alert-info">No posts found.</div>
       )}
     </div>
   )
