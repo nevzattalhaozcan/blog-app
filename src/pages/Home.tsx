@@ -161,11 +161,12 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <div className="d-flex justify-content-center mb-4">
+    <div className="container mt-4" data-testid="home-container">
+      <div className="d-flex justify-content-center mb-4" data-testid="create-post-section">
         <button 
           className="btn btn-secondary" 
           onClick={() => setShowPostModal(true)}
+          data-testid="create-post-button"
         >
           <i className="bi bi-plus-circle me-2"></i>Create Post
         </button>
@@ -176,13 +177,14 @@ const Home: React.FC = () => {
         onClose={() => setShowPostModal(false)}
         onSubmit={handleCreatePost}
         initialData={{ title: '', content: '', featured: true, categories: [] }}
+        data-testid="post-modal"
       />
 
-      <CreatePostButton onPostCreated={handlePostCreated} />
-      {error && <div className="alert alert-danger">{error}</div>}
+      <CreatePostButton onPostCreated={handlePostCreated} data-testid="create-post-button-component" />
+      {error && <div className="alert alert-danger" data-testid="error-message">{error}</div>}
       
       {isLoading ? (
-        <div className="d-flex justify-content-center my-5">
+        <div className="d-flex justify-content-center my-5" data-testid="loading-spinner">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
@@ -191,9 +193,9 @@ const Home: React.FC = () => {
         posts.map((post, index) => {
           const isExpanded = expandedPosts.has(post._id);
           return (
-            <div key={"post-card-" + index} className="card mb-4">
+            <div key={"post-card-" + index} className="card mb-4" data-testid={`post-card-${post._id}`}>
               <div className="card-body">
-                <h3 className="card-title">{post.title}</h3>
+                <h3 className="card-title" data-testid={`post-title-${post._id}`}>{post.title}</h3>
                 <div 
                   className="card-text mb-3 text-break"
                   style={{ whiteSpace: 'pre-line' }}
@@ -202,10 +204,12 @@ const Home: React.FC = () => {
                       ${isExpanded ? post.content : `${post.content.substring(0, 200)}...`}
                     </div>`
                   }}
+                  data-testid={`post-content-${post._id}`}
                 />
                 <button 
                   className={`btn ${isExpanded ? 'btn-outline-secondary' : 'btn-outline-primary'} btn-sm`}
                   onClick={() => toggleReadMore(post._id)}
+                  data-testid={`toggle-read-more-${post._id}`}
                 >
                   {isExpanded ? (
                     <><i className="bi bi-chevron-up me-1"></i>Read Less</>
@@ -220,9 +224,9 @@ const Home: React.FC = () => {
       )}
 
       {!isLoading && posts.length > 0 && totalPages > 1 && (
-        <nav aria-label="Page navigation" className="my-4">
+        <nav aria-label="Page navigation" className="my-4" data-testid="pagination">
           <ul className="pagination justify-content-center">
-            <li className={`page-item ${currentPage <= 1 ? 'disabled' : ''}`}>
+            <li className={`page-item ${currentPage <= 1 ? 'disabled' : ''}`} data-testid="pagination-previous">
               <button
                 className="page-link"
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -233,7 +237,7 @@ const Home: React.FC = () => {
               </button>
             </li>
             {renderPaginationItems()}
-            <li className={`page-item ${currentPage >= totalPages ? 'disabled' : ''}`}>
+            <li className={`page-item ${currentPage >= totalPages ? 'disabled' : ''}`} data-testid="pagination-next">
               <button
                 className="page-link"
                 onClick={() => handlePageChange(currentPage + 1)}
@@ -244,7 +248,7 @@ const Home: React.FC = () => {
               </button>
             </li>
           </ul>
-          <div className="text-center mt-2 text-muted">
+          <div className="text-center mt-2 text-muted" data-testid="pagination-info">
             Page {currentPage} of {totalPages}
           </div>
         </nav>

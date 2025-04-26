@@ -362,19 +362,19 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="container mt-4">
-      {error && <div className="alert alert-danger">{error}</div>}
+    <div className="container mt-4" data-testid="profile-container">
+      {error && <div className="alert alert-danger" data-testid="error-message">{error}</div>}
       {user && (
-        <div className="card mb-4 shadow-sm">
-          <div className="card-header bg-body py-3">
+        <div className="card mb-4 shadow-sm" data-testid="user-card">
+          <div className="card-header bg-body py-3" data-testid="user-card-header">
             <div className="d-flex justify-content-between align-items-center">
               <div className="d-flex align-items-center">
-                <div className="bg-primary bg-opacity-25 rounded-circle p-3 me-3">
+                <div className="bg-primary bg-opacity-25 rounded-circle p-3 me-3" data-testid="user-avatar">
                   <i className="bi bi-person-circle fs-2 text-primary"></i>
                 </div>
                 <div>
-                  <h4 className="mb-0">{user.username}</h4>
-                  <small className="text-muted">
+                  <h4 className="mb-0" data-testid="user-username">{user.username}</h4>
+                  <small className="text-muted" data-testid="user-joined-date">
                     <i className="bi bi-calendar3 me-1"></i>
                     Joined {new Date(user.createdAt).toLocaleDateString('en-US', {
                       year: 'numeric',
@@ -384,31 +384,44 @@ const Profile: React.FC = () => {
                   </small>
                 </div>
               </div>
-              <div className="dropdown">
+              <div className="dropdown" data-testid="user-settings-dropdown">
                 <button
                   className="btn btn-outline-secondary dropdown-toggle"
                   type="button"
                   id="userSettingsDropdown"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
+                  data-testid="settings-button"
                 >
                   <i className="bi bi-gear me-1"></i>
                   Settings
                 </button>
-                <ul className="dropdown-menu dropdown-menu-end shadow-sm">
+                <ul className="dropdown-menu dropdown-menu-end shadow-sm" data-testid="settings-menu">
                   <li>
-                    <button className="dropdown-item" onClick={handleUpdateUserClick}>
+                    <button
+                      className="dropdown-item"
+                      onClick={handleUpdateUserClick}
+                      data-testid="update-details-button"
+                    >
                       <i className="bi bi-pencil me-2"></i>Update Details
                     </button>
                   </li>
                   <li>
-                    <button className="dropdown-item" onClick={() => setShowUpdatePasswordModal(true)}>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => setShowUpdatePasswordModal(true)}
+                      data-testid="change-password-button"
+                    >
                       <i className="bi bi-key me-2"></i>Change Password
                     </button>
                   </li>
-                  <li><hr className="dropdown-divider"/></li>
+                  <li><hr className="dropdown-divider" data-testid="settings-divider" /></li>
                   <li>
-                    <button className="dropdown-item text-danger" onClick={() => setShowDeleteUserModal(true)}>
+                    <button
+                      className="dropdown-item text-danger"
+                      onClick={() => setShowDeleteUserModal(true)}
+                      data-testid="delete-account-button"
+                    >
                       <i className="bi bi-trash me-2"></i>Delete Account
                     </button>
                   </li>
@@ -416,33 +429,33 @@ const Profile: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="card-body">
+          <div className="card-body" data-testid="user-card-body">
             <div className="row g-4">
               <div className="col-md-6">
-                <div className="p-3 border rounded bg-body">
+                <div className="p-3 border rounded bg-body" data-testid="user-email-section">
                   <h6 className="text-muted mb-2">Email Address</h6>
                   <div className="d-flex align-items-center">
                     <i className="bi bi-envelope me-2 text-primary"></i>
-                    <span>{user.email}</span>
+                    <span data-testid="user-email">{user.email}</span>
                   </div>
                 </div>
               </div>
               <div className="col-md-6">
-                <div className="p-3 border rounded bg-body">
+                <div className="p-3 border rounded bg-body" data-testid="user-status-section">
                   <h6 className="text-muted mb-2">Account Status</h6>
                   <div className="d-flex align-items-center">
                     <i className="bi bi-check-circle-fill me-2 text-success"></i>
-                    <span>Active</span>
+                    <span data-testid="user-status">Active</span>
                   </div>
                 </div>
               </div>
               {user.bio && (
                 <div className="col-12">
-                  <div className="p-3 border rounded bg-body">
+                  <div className="p-3 border rounded bg-body" data-testid="user-bio-section">
                     <h6 className="text-muted mb-2">Bio</h6>
                     <div className="d-flex">
                       <i className="bi bi-person-lines-fill me-2 text-primary"></i>
-                      <p className="mb-0">{user.bio}</p>
+                      <p className="mb-0" data-testid="user-bio">{user.bio}</p>
                     </div>
                   </div>
                 </div>
@@ -451,13 +464,13 @@ const Profile: React.FC = () => {
           </div>
         </div>
       )}
-      <h3 className="mb-4">Your Posts</h3>
+      <h3 className="mb-4" data-testid="user-posts-title">Your Posts</h3>
       {posts.map((post, index) => {
         const isExpanded = expandedPosts.has(post._id);
         return (
-          <div key={'post-card-' + index} className="card mb-4 shadow-sm">
+          <div key={'post-card-' + index} className="card mb-4 shadow-sm" data-testid={`post-card-${post._id}`}>
             <div className="card-body">
-              <h5 className="card-title mb-2">{post.title}</h5>
+              <h5 className="card-title mb-2" data-testid={`post-title-${post._id}`}>{post.title}</h5>
               <div
                 className="card-text post-content mb-3"
                 dangerouslySetInnerHTML={{
@@ -467,12 +480,14 @@ const Profile: React.FC = () => {
                     ? `${post.content.substring(0, 200)}...`
                     : post.content,
                 }}
+                data-testid={`post-content-${post._id}`}
               />
               {post.content.length > 200 && (
                 <div className="text-left mb-3">
                   <button
                     className={`btn ${isExpanded ? 'btn-outline-secondary' : 'btn-outline-primary'} btn-sm`}
                     onClick={() => toggleReadMore(post._id)}
+                    data-testid={`toggle-read-more-${post._id}`}
                   >
                     {isExpanded ? (
                       <>
@@ -487,26 +502,31 @@ const Profile: React.FC = () => {
                 </div>
               )}
               <div className="d-flex justify-content-between align-items-center">
-                <div className="text-muted small">
+                <div className="text-muted small" data-testid={`post-metadata-${post._id}`}>
                   <span>
-                  <i className="bi bi-clock me-1"></i>Created: {post.created_at ? new Date(post.created_at).toLocaleString() : 'Unknown'}
+                    <i className="bi bi-clock me-1"></i>Created: {post.created_at ? new Date(post.created_at).toLocaleString() : 'Unknown'}
                   </span>
                   {post.updated_at && post.created_at && post.updated_at !== post.created_at && (
-                  <span className="ms-3">
-                    <i className="bi bi-pencil-square me-1"></i>Updated:{' '}
-                    {new Date(post.updated_at).toLocaleString()}
-                  </span>
+                    <span className="ms-3">
+                      <i className="bi bi-pencil-square me-1"></i>Updated:{' '}
+                      {new Date(post.updated_at).toLocaleString()}
+                    </span>
                   )}
                 </div>
 
                 <div className="btn-group">
-                  <button className="btn btn-outline-primary btn-sm" onClick={() => handleUpdatePost(post)}>
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={() => handleUpdatePost(post)}
+                    data-testid={`edit-post-button-${post._id}`}
+                  >
                     <i className="bi bi-pencil me-1"></i>
                     Edit
                   </button>
                   <button
                     className="btn btn-outline-danger btn-sm"
                     onClick={() => confirmDeletePost(post._id)}
+                    data-testid={`delete-post-button-${post._id}`}
                   >
                     <i className="bi bi-trash me-1"></i>
                     Delete
@@ -519,9 +539,12 @@ const Profile: React.FC = () => {
       })}
 
       {!isLoading && posts.length > 0 && totalPages > 1 && (
-        <nav aria-label="Page navigation" className="my-4">
+        <nav aria-label="Page navigation" className="my-4" data-testid="pagination">
           <ul className="pagination justify-content-center">
-            <li className={`page-item ${currentPage <= 1 ? 'disabled' : ''}`}>
+            <li
+              className={`page-item ${currentPage <= 1 ? 'disabled' : ''}`}
+              data-testid="pagination-previous"
+            >
               <button
                 className="page-link"
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -532,7 +555,10 @@ const Profile: React.FC = () => {
               </button>
             </li>
             {renderPaginationItems()}
-            <li className={`page-item ${currentPage >= totalPages ? 'disabled' : ''}`}>
+            <li
+              className={`page-item ${currentPage >= totalPages ? 'disabled' : ''}`}
+              data-testid="pagination-next"
+            >
               <button
                 className="page-link"
                 onClick={() => handlePageChange(currentPage + 1)}
@@ -543,7 +569,7 @@ const Profile: React.FC = () => {
               </button>
             </li>
           </ul>
-          <div className="text-center mt-2 text-muted">
+          <div className="text-center mt-2 text-muted" data-testid="pagination-info">
             Page {currentPage} of {totalPages}
           </div>
         </nav>

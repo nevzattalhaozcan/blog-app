@@ -243,29 +243,42 @@ const Posts: React.FC = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+    <div className="container mt-4" data-testid="posts-container">
+      <div className="d-flex justify-content-between align-items-center mb-4" data-testid="header-actions">
         <div className="flex-grow-1"></div>
         <div className="text-center flex-grow-1">
-          <button className="btn btn-secondary" onClick={() => setShowPostModal(true)}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowPostModal(true)}
+            data-testid="create-post-button"
+          >
             <i className="bi bi-plus-circle me-2"></i>Create Post
           </button>
         </div>
         <div className="flex-grow-1 text-end">
-          <button className="btn btn-outline-secondary" onClick={() => setShowFilters(!showFilters)}>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => setShowFilters(!showFilters)}
+            data-testid="toggle-filters-button"
+          >
             <i className={`bi bi-funnel${showFilters ? '-fill' : ''} me-2`}></i>
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </button>
         </div>
       </div>
 
-      <PostModal show={showPostModal} onClose={() => setShowPostModal(false)} onSubmit={handleCreatePost} />
+      <PostModal
+        show={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onSubmit={handleCreatePost}
+        data-testid="post-modal"
+      />
 
-      <div className={`collapse ${showFilters ? 'show' : ''}`}>
+      <div className={`collapse ${showFilters ? 'show' : ''}`} data-testid="filters-section">
         <div className="card card-body mb-4 shadow-sm">
           <div className="row g-3">
             <div className="col-md-4">
-              <label className="form-label">Filter by text</label>
+              <label className="form-label" data-testid="filter-text-label">Filter by text</label>
               <div className="input-group">
                 <span className="input-group-text">
                   <i className="bi bi-search"></i>
@@ -276,20 +289,22 @@ const Posts: React.FC = () => {
                   placeholder="Post contains..."
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
+                  data-testid="filter-text-input"
                 />
               </div>
             </div>
 
             <div className="col-md-4">
-              <label className="form-label">Category</label>
+              <label className="form-label" data-testid="category-label">Category</label>
               <select
                 className="form-select"
                 value={filters.category}
                 onChange={(e) => handleFilterChange('category', e.target.value)}
+                data-testid="category-select"
               >
-                <option value="">All Categories</option>
+                <option value="" data-testid="category-option-all">All Categories</option>
                 {availableCategories.map((category) => (
-                  <option key={category} value={category}>
+                  <option key={category} value={category} data-testid={`category-option-${category}`}>
                     {category}
                   </option>
                 ))}
@@ -345,7 +360,11 @@ const Posts: React.FC = () => {
             </div>
 
             <div className="col-12">
-              <button className="btn btn-secondary" onClick={handleResetFilters}>
+              <button
+                className="btn btn-secondary"
+                onClick={handleResetFilters}
+                data-testid="reset-filters-button"
+              >
                 <i className="bi bi-arrow-counterclockwise me-2"></i>
                 Reset Filters
               </button>
@@ -354,10 +373,10 @@ const Posts: React.FC = () => {
         </div>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && <div className="alert alert-danger" data-testid="error-message">{error}</div>}
 
       {isLoading ? (
-        <div className="d-flex justify-content-center my-5">
+        <div className="d-flex justify-content-center my-5" data-testid="loading-spinner">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
@@ -366,9 +385,9 @@ const Posts: React.FC = () => {
         posts.map((post, index) => {
           const isExpanded = expandedPosts.has(post._id);
           return (
-            <div key={'post-card-' + index} className="card mb-4">
+            <div key={'post-card-' + index} className="card mb-4" data-testid={`post-card-${post._id}`}>
               <div className="card-body">
-                <h5 className="card-title mb-3">{post.title}</h5>
+                <h5 className="card-title mb-3" data-testid={`post-title-${post._id}`}>{post.title}</h5>
                 <div
                   className="card-text post-content mb-3"
                   dangerouslySetInnerHTML={{
@@ -379,6 +398,7 @@ const Posts: React.FC = () => {
                           : `${post.content.substring(0, 200)}...`
                         : post.content,
                   }}
+                  data-testid={`post-content-${post._id}`}
                 />
                 {post.content.length > 200 && (
                   <button
@@ -386,6 +406,7 @@ const Posts: React.FC = () => {
                       isExpanded ? 'btn-outline-secondary' : 'btn-outline-primary'
                     } btn-sm mb-3`}
                     onClick={() => toggleReadMore(post._id)}
+                    data-testid={`toggle-read-more-${post._id}`}
                   >
                     {isExpanded ? (
                       <>
@@ -399,7 +420,7 @@ const Posts: React.FC = () => {
                   </button>
                 )}
                 <div className="d-flex justify-content-between align-items-center">
-                  <div className="text-muted small">
+                  <div className="text-muted small" data-testid={`post-metadata-${post._id}`}>
                     <span>
                       <i className="bi bi-clock me-1"></i>Created:{' '}
                       {post.created_at ? new Date(post.created_at).toLocaleString() : 'Unknown'}
@@ -414,7 +435,11 @@ const Posts: React.FC = () => {
                       <span className="ms-3">
                         <i className="bi bi-tags me-1"></i>
                         {post.categories.map((category, idx) => (
-                          <span key={idx} className="badge rounded-pill bg-info text-dark ms-1">
+                          <span
+                            key={idx}
+                            className="badge rounded-pill bg-info text-dark ms-1"
+                            data-testid={`post-category-${post._id}-${idx}`}
+                          >
                             {category}
                           </span>
                         ))}
@@ -429,9 +454,12 @@ const Posts: React.FC = () => {
       )}
 
       {!isLoading && totalPages > 1 && (
-        <nav aria-label="Page navigation" className="my-4">
+        <nav aria-label="Page navigation" className="my-4" data-testid="pagination">
           <ul className="pagination justify-content-center">
-            <li className={`page-item ${filters.page <= 1 ? 'disabled' : ''}`}>
+            <li
+              className={`page-item ${filters.page <= 1 ? 'disabled' : ''}`}
+              data-testid="pagination-previous"
+            >
               <button
                 className="page-link"
                 onClick={() => handlePageChange(filters.page - 1)}
@@ -442,7 +470,10 @@ const Posts: React.FC = () => {
               </button>
             </li>
             {renderPaginationItems()}
-            <li className={`page-item ${filters.page >= totalPages ? 'disabled' : ''}`}>
+            <li
+              className={`page-item ${filters.page >= totalPages ? 'disabled' : ''}`}
+              data-testid="pagination-next"
+            >
               <button
                 className="page-link"
                 onClick={() => handlePageChange(filters.page + 1)}
@@ -453,13 +484,15 @@ const Posts: React.FC = () => {
               </button>
             </li>
           </ul>
-          <div className="text-center mt-2 text-muted">
+          <div className="text-center mt-2 text-muted" data-testid="pagination-info">
             Page {filters.page} of {totalPages}
           </div>
         </nav>
       )}
 
-      {!isLoading && posts.length === 0 && <div className="alert alert-info">No posts found.</div>}
+      {!isLoading && posts.length === 0 && (
+        <div className="alert alert-info" data-testid="no-posts-message">No posts found.</div>
+      )}
     </div>
   );
 };
